@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx;
 using HarmonyLib;
+using System;
 using TMPro;
 using UnboundLib;
 using UnboundLib.Utils.UI;
-using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace CardBarPatch
 {
@@ -20,7 +17,7 @@ namespace CardBarPatch
         private const string GUID = "com.BossSloth.CardBarPatch";
         private const string ModName = "Card Bar Patch";
         private static string CompatibilityModName => CardBarPatch.ModName.Replace(" ", "");
-        
+
         public static CardBarPatch instance;
         public static KeyCode DetectedKey
         {
@@ -76,12 +73,12 @@ namespace CardBarPatch
         private bool detectKey;
 
         private bool firstTime = true;
-        
+
         public static float estimatedCards;
         static string GetConfigKey(string key) => $"{CardBarPatch.CompatibilityModName}_{key}";
 
         private void Awake()
-        {   
+        {
 
             Unbound.RegisterClientSideMod(GUID);
         }
@@ -89,22 +86,10 @@ namespace CardBarPatch
         private void Start()
         {
             instance = this;
-            On.MainMenuHandler.Awake += (orig, self) =>
-            {
-                self.ExecuteAfterFrames(3, () =>
-                {
-                    if (CardBarHandler.instance != null)
-                    {
-                        CardBarHandler.instance.ResetCardBards();
-                    }
-                });
 
-                orig(self);
-            };
-            
             var harmony = new Harmony("com.BossSloth.CardBarPatch");
             harmony.PatchAll();
-            
+
             Unbound.RegisterMenu(ModName, () =>
             {
                 CardBarHandler.instance.gameObject.SetActive(true);
@@ -120,7 +105,7 @@ namespace CardBarPatch
 
             button = MenuHandler.CreateButton("Set toggle card bar keybind", menu, () => { detectKey = true; }, 35);
             MenuHandler.CreateText("Toggle card bar keybind is: ", menu, out keyText, 40);
-            
+
             MenuHandler.CreateSlider("Preview cards", menu, 40, 1, 50, 10, (val) =>
                 {
                     previewCards = val;
@@ -143,41 +128,41 @@ namespace CardBarPatch
                     UpdateCardBar();
                 },
                 out var spacingSlider, true);
-            
+
             MenuHandler.CreateSlider("Right side dist(Def: 35)", menu, 40, 0, 100, DistanceFromRight, (val) =>
             {
                 DistanceFromRight = val;
                 UpdateCardBar();
             }, out var rightSideSlider, true);
-            
+
             MenuHandler.CreateSlider("Horizontal offset(Def: 145)", menu, 40, 20, 190, HorizontalOffset, (val) =>
                 {
                     HorizontalOffset = val;
                     UpdateCardBar();
                 },
                 out var horizontalSlider, true);
-            
+
             MenuHandler.CreateSlider("Card size(Def: 40)", menu, 40, 20, 50, CardSize, (val) =>
                 {
                     CardSize = val;
                     UpdateCardBar();
                 },
                 out var cardSizeSlider, true);
-            
+
             MenuHandler.CreateSlider("Vertical dist(Def: 50)", menu, 40, 20, 60, VerticalDistance, (val) =>
                 {
                     VerticalDistance = val;
                     UpdateCardBar();
                 },
                 out var verticalSlider, true);
-            MenuHandler.CreateSlider( "Opacity(Def: 100)", menu, 40, 0, 100, Opacity, (val) =>
+            MenuHandler.CreateSlider("Opacity(Def: 100)", menu, 40, 0, 100, Opacity, (val) =>
                 {
                     Opacity = val;
                     UpdateCardBar();
                 },
                 out var opacitySlider, true);
             var toggle = MenuHandler.CreateToggle(AutoHide, "Auto hide during battle", menu,
-                arg0 => { AutoHide = arg0;}, 40);
+                arg0 => { AutoHide = arg0; }, 40);
             MenuHandler.CreateButton("Reset all", menu, () =>
             {
                 Spacing = 3;
@@ -209,7 +194,7 @@ namespace CardBarPatch
             {
                 CardBarHandler.instance.ResetCardBards();
             });
-            
+
             CardBarHandler.instance.ResetCardBards();
             firstTime = false;
         }
@@ -234,16 +219,17 @@ namespace CardBarPatch
                 CardBarHandler.instance.gameObject.SetActive(true);
                 hasToggled = false;
             }
-            
+
             if (detectKey)
             {
                 var values = Enum.GetValues(typeof(KeyCode));
-                foreach(KeyCode code in values){
+                foreach (KeyCode code in values)
+                {
                     if (Input.GetKeyDown(code))
                     {
                         DetectedKey = code;
                         detectKey = false;
-                    }                    
+                    }
                 }
 
                 if (!(button is null)) button.GetComponentInChildren<TextMeshProUGUI>().text = "Press any key";
@@ -269,7 +255,7 @@ namespace CardBarPatch
                     {
                         var card = CardChoice.instance.cards[i];
                         if (card == null) card = CardChoice.instance.cards[0];
-                        CardBarHandler.instance.AddCard(y,card);
+                        CardBarHandler.instance.AddCard(y, card);
                     }
                 }
             });
@@ -277,7 +263,7 @@ namespace CardBarPatch
 
         private static void UpdateCardBar()
         {
-            var cardBars = (CardBar[]) Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
+            var cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
             for (int i = 0; i < cardBars.Length; i++)
             {
                 UpdateLocalCardBar(cardBars[i], i);
@@ -324,8 +310,8 @@ namespace CardBarPatch
             var cardSized = useAdjusted ? adjustedCardSize : CardSize;
             var offset = -(HorizontalOffset * 10);
             estimatedCards = (-offset - (-offset / cardSized * Spacing)) / cardSized;
-            estimatedCards += Spacing*0.15f;
-            estimatedCards = Mathf.Round(estimatedCards*100)/100;
+            estimatedCards += Spacing * 0.15f;
+            estimatedCards = Mathf.Round(estimatedCards * 100) / 100;
             estimatedText.text = "Estimated cards that will be visible with these settings: " + estimatedCards;
         }
 
