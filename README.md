@@ -7,3 +7,5 @@ My BepInEx mods for the game Rounds made by Landfall games
 
 # Boss Sloth's tweaks
 [README](https://github.com/tddebart/BossSlothsMods/blob/master/BossSlothsTweaks/ThunderStore/README.md)
+
+# Note Only Cards Patch WOrk Work For Right Now
